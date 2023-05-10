@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>正律和鸣</title>
+	<meta http-equiv="Content-Type" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" charset=utf-8 name="viewport">
+
+</head>
+<style>body { 	position : absolute;
+	width : 100%;
+	height : 100%;
+	}
+#virtualKeyboard {
+            position: fixed;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            height: auto;
+            background-color: #f1f1f1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .key {
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+		.key:active {
+            /* 设置键盘按键的点击样式 */
+            background-color: #ccc;
+        }
+
+</style>
+<body>
+	<h1>正律和鸣</h1>
+	<p>正律和鸣做题小工具</p>
+	<button id="startButton">Start / Reset</button>
+	<p id="time"></p>
+	<p id="num1"></p>
+	<p id="num2"></p>
+	
+	<p id="result"></p>
+	<progress id="progressBar" value="0" max="2000"></progress>
+	<div id="timeLeft"></div>
+	<div id="virtualKeyboard">
+		
+		<button class="key">7</button>
+		<button class="key">8</button>
+		<button class="key">9</button>
+
+		<button class="key">4</button>
+		<button class="key">5</button>
+		<button class="key">6</button>
+
+		<button class="key">1</button>
+		<button class="key">2</button>
+		<button class="key">3</button>
+	  </div>
+	<script>
+		// 定义游戏变量
+		let round = 0;
+		let num1;
+		let num2;
+		let sum = 0;
+		let num1Options = [2, 3, 5, 6];
+		let isKeyPressed = false;
+		let progressInterval;
+		let cd;
+		var seconds = 0;
+		var timerInterval;
+
+
+		// 随机生成 num1
+		function generateNum1() {
+			if (round < 4) {
+				const index = Math.floor(Math.random() * num1Options.length);
+				num1 = num1Options[index];
+				num1Options.splice(index, 1);
+			} else {
+				num1 = 4;
+			}
+			document.getElementById("num1").textContent = "当前曲风数: " + num1;
+		}
+
+		// 处理按键事件
+		function handleKeyPress(event) {
+			// 检查按键是否在有效范围内
+			if (event.keyCode >= 50 && event.keyCode <= 54 && !isKeyPressed) {
+				num2 = event.keyCode - 48;
+			}
+			else if (event.keyCode >= 98 && event.keyCode <= 102 && !isKeyPressed){
+				num2 = event.keyCode - 96;
+			}
+			if (event.keyCode >= 50 && event.keyCode <= 54 && !isKeyPressed || event.keyCode >= 98 && event.keyCode <= 102 && !isKeyPressed){
+				isKeyPressed = true;
+				switch (num2){
+					case 2:
+						num2name = '角'; 
+						break;
+					case 3:
+						num2name = '变徵'; 
+						break;
+					case 4:
+						num2name = '羽'; 
+						break;
+					case 5:
+						num2name = '变宫'; 
+						break;
+					case 6:
+						num2name = '商'; 
+						break;
+				}
+				if (num2 === 5) {
+					cd = 1380;
+				}
+				else {
+					cd = 1380;
+				}
+				const progressBar = document.getElementById("progressBar");
+				progressBar.max = cd;
+				console.log(cd);
+				
+				if (round === 4 &&num2 == 4) num2name = "阳春徵";
+				num2 = 9-num2;
+				if (num2 == 7) num2 = 2;
+				
+				document.getElementById("num2").textContent = "你合奏了: " + num2name;
+				sum = num1 + num2;
+				console.log(num1Options);
+
+				if (sum > 9) {
+					num1 = 0;
+					sum = 0;
+					const progressBar = document.getElementById("progressBar");
+					progressBar.value = 0;
+					progressInterval = setInterval(function(){
+						const progressBar = document.getElementById("progressBar");
+						const timeLeftDiv = document.getElementById("timeLeft");
+						progressBar.value += 10; // 每次增加 10ms
+						const timeLeft = Math.round((progressBar.value) / 1);
+						timeLeftDiv.textContent = "CD: " + timeLeft + "ms";
+						if (progressBar.value >= cd) {
+							clearInterval(progressInterval);
+							progressBar.value = 0;
+							timeLeftDiv.textContent = "";
+							isKeyPressed = false;
+							document.getElementById("num1").textContent = "当前曲风数: " + num1;
+						}
+					}, 10);
+				} else if (sum === 9) {
+					round++;
+					document.getElementById("result").textContent = "你做对了 " + round + " 道!";
+					if (num2name !== "变宫") generateNum1();
+					if (round < 5) {
+						const progressBar = document.getElementById("progressBar");
+						progressBar.value = 0;
+						progressInterval = setInterval(function(){
+							const progressBar = document.getElementById("progressBar");
+							const timeLeftDiv = document.getElementById("timeLeft");
+							progressBar.value += 10; // 每次增加 10ms
+							const timeLeft = Math.round((progressBar.value) / 1);
+							timeLeftDiv.textContent = "CD: " + timeLeft + "ms/" + cd + "ms";
+							if (progressBar.value >= cd) {
+								clearInterval(progressInterval);
+								progressBar.value = 0;
+								timeLeftDiv.textContent = "";
+								isKeyPressed = false;
+								if (num2name == "变宫") generateNum1();
+								sum = 0;
+								document.getElementById("num2").textContent = "你合奏了: ";
+								document.getElementById("result").textContent = "";
+							}
+						}, 10);
+						
+					}
+					else {
+						clearInterval(timerInterval);
+						document.getElementById("result").textContent = "你做对了 " + round + " 道!获得" + huixiao + "会效！";
+					}
+				} else {
+					num1 = sum;
+					document.getElementById("num1").textContent = "当前曲风数: " + num1;
+					const progressBar = document.getElementById("progressBar");
+					progressBar.value = 0;
+					progressInterval = setInterval(function(){
+						const progressBar = document.getElementById("progressBar");
+						const timeLeftDiv = document.getElementById("timeLeft");
+						progressBar.value += 10; // 每次增加 10ms
+						const timeLeft = Math.round((progressBar.value) / 1);
+						timeLeftDiv.textContent = "CD: " + timeLeft + "ms";
+						if (progressBar.value >= cd) {
+							clearInterval(progressInterval);
+							progressBar.value = 0;
+							timeLeftDiv.textContent = "";
+							isKeyPressed = false;
+							document.getElementById("num1").textContent = "当前曲风数: " + num1;
+						}
+					}, 10);
+
+					
+					//progressInterval = setInterval(updateProgressBar, 10);
+					//setTimeout("isKeyPressed = false", 1380 );
+					
+				}
+
+			}
+		}
+
+		
+		// 开始按钮点击事件处理
+		document.getElementById("startButton").addEventListener("click", function() {
+			// 定义游戏变量
+			isKeyPressed = false;
+			
+			
+			
+			round = 0;
+			num1Options = [2, 3, 5, 6];
+			generateNum1();
+			sum = 0;
+			document.getElementById("num2").textContent = "你合奏了: ";
+			document.getElementById("result").textContent = "";
+
+			// 重置进度条和剩余时间
+			const progressBar = document.getElementById("progressBar");
+			const timeLeftDiv = document.getElementById("timeLeft");
+			progressBar.value = 0;
+			timeLeftDiv.textContent = "";
+
+			// 清除之前的定时器
+			clearInterval(progressInterval);
+			clearInterval(timerInterval);
+			seconds = 0;
+			timerInterval = setInterval(updateTimer, 100);
+
+			// 注册按键事件监听器
+			document.addEventListener("keydown", handleKeyPress);
+			
+			// 注册虚拟键盘点击事件监听器
+			const virtualKeys = document.querySelectorAll("#virtualKeyboard .key");
+			virtualKeys.forEach(function(key) {
+			key.addEventListener("click", handleVirtualKeyboard);
+
+		});
+		});
+		// 开始第一轮
+		//generateNum1();
+
+
+		function updateTimer() {
+                seconds+=100;
+				document.getElementById("time").textContent = "当前用时 " + seconds + "ms";
+            }
+
+		// 处理虚拟键盘点击事件
+		function handleVirtualKeyboard(event) {
+			const key = event.target.textContent;
+			handleKeyPress({ keyCode: key.charCodeAt(0) });
+		}
+
+
+	</script>
+</body>
+</html>
