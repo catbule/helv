@@ -179,6 +179,8 @@
 					}
 					else {
 						clearInterval(timerInterval);
+						if (seconds<10000) huixiao = 40;
+						if (seconds<20000) huixiao = 20;
 						document.getElementById("result").textContent = "你做对了 " + round + " 道!获得" + huixiao + "会效！";
 					}
 				} else {
